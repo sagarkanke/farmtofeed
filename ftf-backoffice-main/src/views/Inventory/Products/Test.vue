@@ -1,101 +1,85 @@
 <template>
-    <form @submit.prevent="handleSubmit">
-      <!-- TabMenu Component from PrimeVue -->
-      
-      <div v-if="selectedGrade" class="mt-2">
-        <div class="custom-tabmenu-wrapper">
-          <TabMenu
-            :model="nestedRouteItems"
-            :activeIndex="activeIndex"
-            @tab-change="handleTabChange"
-          />
-        </div>
+    <!-- PrimeVue TabMenu Component -->
+    <div v-if="selectedGrade" class="mt-2">
+      <div class="custom-tabmenu-wrapper">
+        <TabMenu
+          :model="nestedRouteItems"
+          :activeIndex="activeIndex"
+          @tab-change="handleTabChange"
+        />
       </div>
+    </div>
   
-      <div class="card ">
-      <!-- Dynamic Inputs for the Active Tab -->
-      <div v-if="activeTabKey" class="mt-3">
-        <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">
-          Product Description
-        </h5>
-        <div :style="{ 'margin-left': '-22px' }">
-          <div class="form-row flex flex-wrap gap-2 ml-3 mt-1">
-            <div class="field flex-1 flex flex-column">
-              <label for="ecommerceDescription" :style="{ 'font-weight': 'bold', 'font-size': 'small' }">
-                Ecommerce Description
-              </label>
-              <Textarea
-                id="ecommerceDescription"
-                v-model="formValues[activeTabKey][0].field1"
-                rows="4"
-                placeholder="Product Description..."
-                :style="{ width: '100%' }"
-              ></Textarea>
-            </div>
-            <div class="field flex-1 flex flex-column">
-              <label for="farmerAppDescription" :style="{ 'font-weight': 'bold', 'font-size': 'small' }">
-                Farmer App Description
-              </label>
-              <Textarea
-                id="farmerAppDescription"
-                v-model="formValues[activeTabKey][0].field2"
-                rows="4"
-                placeholder="Product Description..."
-                :style="{ width: '100%' }"
-              ></Textarea>
-            </div>
+    <!-- Dynamic Inputs for the Active Tab -->
+    <div  class="mt-3" v-if="formValues[activeTabKey]">
+      <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">
+        Product Description
+      </h5>
+      <div :style="{ 'margin-left': '-22px' }">
+        <div class="form-row flex flex-wrap gap-2 ml-3 mt-1">
+          <div class="field flex-1 flex flex-column" >
+            <label for="ecommerceDescription" :style="{ 'font-weight': 'bold', 'font-size': 'small' }">
+              Ecommerce Description
+            </label>
+            <Textarea
+              id="ecommerceDescription"
+
+              v-model="formValues[activeTabKey][0].field1"
+              rows="4"
+              placeholder="Product Description..."
+              :style="{ width: '100%' }"
+            ></Textarea>
           </div>
-          <div class="flex justify-content-between ml-3">
-            <div class="text-sm text-color-secondary ml-1" :style="{ 'margin-top': '-2%' }">
-              <span> Max 144 Characters</span>
-            </div>
-            <div class="text-sm text-color-secondary" :style="{ 'margin-top': '-2%', 'margin-right': '14rem' }">
-              <span> Max 144 Characters</span>
-            </div>
+          <div class="field flex-1 flex flex-column" >
+            <label for="farmerAppDescription" :style="{ 'font-weight': 'bold', 'font-size': 'small' }">
+              Farmer App Description
+            </label>
+            <Textarea
+              id="farmerAppDescription"
+              v-model="formValues[activeTabKey][0].field2"
+              rows="4"
+              placeholder="Product Description..."
+              :style="{ width: '100%' }"
+            ></Textarea>
+          </div>
+        </div>
+        <div class="flex justify-content-between ml-3">
+          <div class="text-sm text-color-secondary ml-1" :style="{ 'margin-top': '-2%' }">
+            <span> Max 144 Characters</span>
+          </div>
+          <div class="text-sm text-color-secondary" :style="{ 'margin-top': '-2%', 'margin-right': '14rem' }">
+            <span> Max 144 Characters</span>
           </div>
         </div>
       </div>
-      </div>
+    </div>
   
-      <button type="submit" class="mt-3">Submit</button>
-    </form>
+    <!-- Button to Submit Values -->
+    <button @click="handleSubmit" class="mt-3">Submit</button>
   </template>
   
   <script setup>
-  import { ref, reactive, onMounted } from 'vue';
+  import { ref, watch, computed  } from 'vue';
   
-  // Simulate fetching dynamic tabs from an API
-  async function fetchDynamicTabsFromAPI() {
-    return {
-      tabList1: [{ field1: '', field2: '' }], // Example initial values for tabs
-      tabList2: [{ field1: '', field2: '' }],
-    };
-  }
+  // Props
+  const props = defineProps({
+    formValues: {
+      type: Object,
+      required: true,
+    },
+  });
   
-  // Reactive object for form values based on API data
-  const formValues = reactive({});
+  // Reactive state for internal component logic
   const activeIndex = ref(0);
   const nestedRouteItems = ref([]);
   const selectedGrade = true; // Mocked value; update as necessary
   const activeTabKey = ref('');
   
-  // Fetch dynamic tabs and setup form values
-  onMounted(async () => {
-    try {
-      const dynamicTabs = await fetchDynamicTabsFromAPI();
-      Object.assign(formValues, dynamicTabs);
+ 
   
-      // Initialize nestedRouteItems based on dynamicTabs keys
-      nestedRouteItems.value = Object.keys(dynamicTabs).map((key, index) => ({
-        label: `Tab List ${index + 1}`,
-        key: key,
-      }));
-  
-      // Set the initial active tab key
-      activeTabKey.value = nestedRouteItems.value[0]?.key || '';
-    } catch (error) {
-      console.error('Error fetching dynamic tabs:', error);
-    }
+  // Computed property to access the current tab's values
+  const currentTabValues = computed(() => {
+    return props.formValues[activeTabKey.value] || [];
   });
   
   // Handle tab change event from TabMenu
@@ -104,28 +88,39 @@
     activeTabKey.value = nestedRouteItems.value[activeIndex.value].key;
   };
   
-  // Handle form submission
+  // Handle submission by logging or processing form values
   const handleSubmit = () => {
-    console.log('Form Values:', formValues);
-    alert(JSON.stringify(formValues, null, 2));
+    console.log('Form Values:', props.formValues);
+    alert(JSON.stringify(props.formValues, null, 2));
   };
+  console.log("formValues",props.formValues)
+  watch(
+  () => props.formValues,
+  (newValues) => {
+    const keys = Object.keys(newValues);
+    console.log("keys", keys)
+    nestedRouteItems.value = keys.map((key, index) => ({
+      label: `${key}`,
+      key: key,
+    }));
+
+    // Set the initial active tab key if it's not already set
+    if (!activeTabKey.value) {
+      activeTabKey.value = keys[0] || '';
+    }
+  },
+  { immediate: true, deep: true }
+);
   </script>
   
   <style scoped>
-  /* Optional styles for better visual separation */
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  /* Updated deep selector syntax */
+  :deep(.custom-tabmenu-wrapper) {
+    /* Your styles */
   }
   
-  button {
-    margin-right: 10px;
-  }
-  
-  input, textarea {
-    margin: 5px 0;
-    padding: 5px;
+  :deep(.form-row) {
+    /* Additional scoped styles if needed */
   }
   </style>
   

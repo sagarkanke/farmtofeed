@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive , onBeforeMount, computed, watch } from 'vue';
+import { ref, onMounted, reactive, onBeforeMount, computed, watch } from 'vue';
 
 import MultiSelect from 'primevue/multiselect';
 import axios from 'axios';
@@ -320,30 +320,48 @@ const saveProduct = async () => {
 // };
 
 const handleTabChange = () => {
-    console.log("Selected Grades:", selectedGrade.value, selectedProductName.value);
+    console.log("Selected Grades:", selectedGrade.value);
 
+    // Clear existing nestedRouteItems and formValues
     nestedRouteItems.value = [];
-    let counter = 1;
-    selectedGrade.value.forEach(grade => {
+
+    // Create a set of selected labels for easy lookup
+    const selectedLabels = new Set(selectedGrade.value.map(grade => {
         const selectedGradeObject = grades.value.find(item => item.id === grade.id);
+        return selectedGradeObject ? selectedGradeObject.label : null;
+    }));
 
-        if (selectedGradeObject) {
-            const label = selectedGradeObject.label;
+    // Maintain a counter for IDs
+    let counter = 1;
 
-            activeTab.value = label;
-
-            if (!nestedRouteItems.value.includes(label)) {
+    // Update nestedRouteItems and formValues based on selected labels
+    selectedLabels.forEach(label => {
+        if (label) {
+            // Add tab if it's not already present
+            if (!nestedRouteItems.value.some(item => item.label === label)) {
                 nestedRouteItems.value.push({
-                    'id': counter++,
-                    'label': label
-                }
-                );
+                    id: counter++,
+                    label: label,
+                });
             }
+
+            // Ensure formValues contains an entry for this label
+            if (!formValues[label]) {
+                formValues[label] = [{ field1: '', field2: '' }];
+            }
+        }
+    });
+
+    // Remove formValues entries for labels no longer selected
+    Object.keys(formValues).forEach(key => {
+        if (!selectedLabels.has(key)) {
+            delete formValues[key];
         }
     });
 
     console.log("Active Tab Label:", activeTab.value);
     console.log("Updated Nested Route Items:", nestedRouteItems.value);
+    console.log("Updated Form Values:", formValues);
 };
 
 const apiClient = axios.create({
@@ -399,16 +417,16 @@ const saveProductVariation = async () => {
 
         // Sending the request
         const data = await productService.createProductVariant(formData);
-        if(data){
+        if (data) {
             toast.add({ severity: 'success', summary: 'Success', detail: 'Product variation created successfully!', life: 3000 });
             addVariants();
             addUnitVariant.value = false;
-            
+
 
         }
- 
 
-    
+
+
 
     } catch (error) {
         // Handle errors
@@ -620,32 +638,50 @@ const hideDialog = () => {
 
 // Simulate fetching dynamic tabs from an API
 async function fetchDynamicTabsFromAPI() {
-  return {
-    tabList1: [{ field1: '', field2: '' }], // Example initial values for tabs
-    tabList2: [{ field1: '', field2: '' }],
-  };
+    return {
+        tabList1: [{ field1: '', field2: '' }], // Example initial values for tabs
+        tabList2: [{ field1: '', field2: '' }],
+    };
 }
-// Fetch dynamic tabs and setup form values
-onMounted(async () => {
-  try {
-    const dynamicTabs = await fetchDynamicTabsFromAPI();
-    Object.assign(formValues, dynamicTabs);
 
-    // Initialize nestedRouteItems based on dynamicTabs keys
-    nestedRouteItems.value = Object.keys(dynamicTabs).map((key, index) => ({
-      label: `Tab List ${index + 1}`,
-      key: key,
-    }));
-
-    // Set the initial active tab key
-    activeTabKey.value = nestedRouteItems.value[0]?.key || '';
-  } catch (error) {
-    console.error('Error fetching dynamic tabs:', error);
-  }
-});
-const formValues = reactive({});
+const formValues = reactive(
+    {
+        // tabList1: [{ field1: '', field2: '' }], // Example initial values for tabs
+        // tabList2: [{ field1: '', field2: '' }],
+    }
+);
 const activeIndex = ref(0);
 const activeTabKey = ref('');
+watch(
+    () => formValues,
+    (newValues) => {
+        const keys = Object.keys(newValues);
+        console.log("newValues P", newValues)
+        nestedRouteItems.value = keys.map((key, index) => ({
+            label: `${key}`,
+            key: key,
+        }));
+
+        // Set the initial active tab key if it's not already set
+        if (!activeTabKey.value) {
+            activeTabKey.value = keys[0] || '';
+        }
+    },
+    { immediate: true, deep: true }
+);
+
+
+
+// Computed property to access the current tab's values
+const currentTabValues = computed(() => {
+    return props.formValues[activeTabKey.value] || [];
+});
+
+// Handle tab change event from TabMenu
+const handleTabnChange = (event) => {
+    activeIndex.value = event.index;
+    activeTabKey.value = nestedRouteItems.value[activeIndex.value].key;
+};
 </script>
 
 <template>
@@ -724,7 +760,7 @@ const activeTabKey = ref('');
 
                 </div>
             </div>
-            <TabDynmic />
+            <TabDynmic :formValues="formValues" />
 
             <div v-if="selectedGrade" class="mt-2">
                 <div class="custom-tabmenu-wrapper">
@@ -733,7 +769,7 @@ const activeTabKey = ref('');
                         @tab-change="handleTabChange" />
                 </div>
             </div>
-          
+
             <div class="card p-fluid mt-3" :style="{}">
                 <h5>Product Status</h5>
                 <div class="grid">
@@ -761,7 +797,7 @@ const activeTabKey = ref('');
             <div class="card ">
                 <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">Product Description
                 </h5>
-              
+
                 <div :style="{ 'margin-left': '-22px' }">
                     <!-- First Row -->
                     <div class="form-row flex flex-wrap gap-2 ml-3 mt-1">
@@ -834,7 +870,6 @@ const activeTabKey = ref('');
             </div>
 
 
-
             <div class="card">
                 <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">Stock</h5>
                 <div :style="{ 'margin-left': '-22px' }">
@@ -903,12 +938,13 @@ const activeTabKey = ref('');
                                 </div>
                             </div>
 
-                            
+
                             <div class="flex gap-2" :style="{ 'margin-right': '-22px' }">
                                 <Button type="button" label="Remove" icon="pi pi-trash"
                                     :style="{ 'background-color': '#FCE8E8', border: '#FCE8E8', 'color': '#C80000' }"
                                     @click="exportCSV($event)"></Button>
-                                <Button type="button" label="Add Unit Variant" icon="pi pi-plus" :disabled="!addUnitVariantFlag"
+                                <Button type="button" label="Add Unit Variant" icon="pi pi-plus"
+                                    :disabled="!addUnitVariantFlag"
                                     :style="{ 'background-color': 'darkgreen', border: 'darkgreen' }"
                                     @click="addUnitVariantModal()"></Button>
                             </div>
@@ -1261,7 +1297,6 @@ const activeTabKey = ref('');
     display: none;
     /* Hide any additional pseudo-element used as underline */
 }
+
 /* Updated deep selector syntax */
-
-
 </style>
