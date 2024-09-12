@@ -9,6 +9,7 @@ import { ProductService } from '@/service/ProductService';
 import { useToast } from 'primevue/usetoast';
 import { CompanyService } from '@/service/CompanyService';
 import InputNumber from 'primevue/inputnumber';
+import TabDynmic from './Test.vue'
 import { PhotoService } from '@/service/PhotoService';
 const dropdownItems = ref([
     { name: 'Option 1', code: 'Option 1' },
@@ -723,7 +724,7 @@ const activeTabKey = ref('');
 
                 </div>
             </div>
-
+            <TabDynmic />
 
             <div v-if="selectedGrade" class="mt-2">
                 <div class="custom-tabmenu-wrapper">
@@ -760,47 +761,7 @@ const activeTabKey = ref('');
             <div class="card ">
                 <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">Product Description
                 </h5>
-                <div v-if="activeTabKey" class="mt-3">
-      <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">
-        Product Description
-      </h5>
-      <div :style="{ 'margin-left': '-22px' }">
-        <div class="form-row flex flex-wrap gap-2 ml-3 mt-1">
-          <div class="field flex-1 flex flex-column">
-            <label for="ecommerceDescription" :style="{ 'font-weight': 'bold', 'font-size': 'small' }">
-              Ecommerce Description
-            </label>
-            <Textarea
-              id="ecommerceDescription"
-              v-model="formValues[activeTabKey][0].field1"
-              rows="4"
-              placeholder="Product Description..."
-              :style="{ width: '100%' }"
-            ></Textarea>
-          </div>
-          <div class="field flex-1 flex flex-column">
-            <label for="farmerAppDescription" :style="{ 'font-weight': 'bold', 'font-size': 'small' }">
-              Farmer App Description
-            </label>
-            <Textarea
-              id="farmerAppDescription"
-              v-model="formValues[activeTabKey][0].field2"
-              rows="4"
-              placeholder="Product Description..."
-              :style="{ width: '100%' }"
-            ></Textarea>
-          </div>
-        </div>
-        <div class="flex justify-content-between ml-3">
-          <div class="text-sm text-color-secondary ml-1" :style="{ 'margin-top': '-2%' }">
-            <span> Max 144 Characters</span>
-          </div>
-          <div class="text-sm text-color-secondary" :style="{ 'margin-top': '-2%', 'margin-right': '14rem' }">
-            <span> Max 144 Characters</span>
-          </div>
-        </div>
-      </div>
-    </div>
+              
                 <div :style="{ 'margin-left': '-22px' }">
                     <!-- First Row -->
                     <div class="form-row flex flex-wrap gap-2 ml-3 mt-1">

@@ -1,6 +1,7 @@
 <template>
     <form @submit.prevent="handleSubmit">
       <!-- TabMenu Component from PrimeVue -->
+      
       <div v-if="selectedGrade" class="mt-2">
         <div class="custom-tabmenu-wrapper">
           <TabMenu
@@ -11,6 +12,7 @@
         </div>
       </div>
   
+      <div class="card ">
       <!-- Dynamic Inputs for the Active Tab -->
       <div v-if="activeTabKey" class="mt-3">
         <h5 :style="{ color: '#808080', 'font-size': 'medium', 'margin-left': '-10px' }">
@@ -53,6 +55,7 @@
           </div>
         </div>
       </div>
+      </div>
   
       <button type="submit" class="mt-3">Submit</button>
     </form>
@@ -60,8 +63,6 @@
   
   <script setup>
   import { ref, reactive, onMounted } from 'vue';
-  import { TabMenu } from 'primevue/tabmenu'; // Ensure PrimeVue is correctly set up in your project
-  import Textarea from 'primevue/textarea'; // Ensure the Textarea component is imported from PrimeVue
   
   // Simulate fetching dynamic tabs from an API
   async function fetchDynamicTabsFromAPI() {

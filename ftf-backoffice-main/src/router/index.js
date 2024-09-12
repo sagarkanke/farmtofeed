@@ -224,7 +224,7 @@ const routes = [
           {
             path: 'new-product',
             name: 'newProduct',
-            component: () => import('@/views/Inventory/Products/test.vue'),
+            component: () => import('@/views/Inventory/Products/Add.vue'),
             meta: { breadcrumb: 'New Product' }
           },
           {
